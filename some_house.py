@@ -16,10 +16,10 @@ house = residential_houses[0] #будет заменено
 house_characteristics = residential_houses_characteristics[0] #будет заменено
 
 connection = mysql.connector.connect(
-host="192.168.58.240",
-user="admin",
-passwd="MiloRd12",
-database="nnc_db")
+host="",
+user="",
+passwd="",
+database="")
 cursor = connection.cursor() #ставим курсор
 
 def rundom_house():
