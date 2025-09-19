@@ -1,9 +1,7 @@
 #1. Скроллбар для элементов. 
-#дело в цифрах. высота в канвасе позволяет прокручивать фрейм только на какое-то число клеток
 #2. Левая панель с информацией
 #3. Редактирование
-#4. Выбор адреса
-#5. Таблица MAC-адресов
+#4. Таблица MAC-адресов
 
 import tkinter as tk
 from tkinter import ttk
@@ -19,10 +17,10 @@ switch = switches[0] #будет заменено
 switch_characteristics = switches_characteristics[0] #будет заменен
 
 connection = mysql.connector.connect(
-host="192.168.58.240",
-user="admin",
-passwd="MiloRd12",
-database="nnc_db")
+host="",
+user="",
+passwd="",
+database="")
 cursor = connection.cursor() #ставим курсор
 
 
@@ -39,8 +37,7 @@ def rundom_switch():
 
     ports = 52 #сюда пробрасывать переменную по числу портов
     heading = ['№ ', 'Тип порта', 'Описание', 'Настройки']
-
-    #начало###################################################
+    
     mainframe = tk.Frame(root)
     portframe = tk.Frame(root)
     mainframe.pack(side="left", fill="both", expand=True)
@@ -58,18 +55,6 @@ def rundom_switch():
     port_scrollable_frame = tk.Frame(portcanvas)
     portcanvas.create_window((0, 0), window=port_scrollable_frame, anchor='nw')
 
-
-    """scrollbar_vertical = tk.Scrollbar(portframe, orient="vertical") #это вертикальная полоса прокрутки, привязывается к фрейму
-    scrollbar_vertical.pack(side="right", fill="y") #размещение
-    scrollbar_vertical.config(command=portcanvas.yview) #конфигурация полосы прокрутки, какой канвас прокручивать
-    portcanvas.config(yscrollcommand=scrollbar_vertical.set)
-
-    scrollbar_horizontal = tk.Scrollbar(port_scrollable_frame, orient="horizontal") #это горизонтальная полоса прокрутки, привязывается к фрейму
-    scrollbar_horizontal.pack(side="bottom", fill="x")
-    scrollbar_horizontal.config(command=portcanvas.xview)
-    portcanvas.config(xscrollcommand=scrollbar_horizontal.set)"""
-    #конец###################################################
-
     style = ttk.Style()
     style.theme_use("classic")
     style.configure("Main.Treeview", background="white", foreground="black", font=("Times New Roman", 12), rowheight=40)
@@ -84,13 +69,13 @@ def rundom_switch():
     for row, head in zip(heading_range, heading):
         tree.heading(f"col{row}", text=head)
         if row == 0:
-            tree.column("col0", width=50) #
+            tree.column("col0", width=50) 
         elif row == 1:
-            tree.column("col1", width=80) #80
+            tree.column("col1", width=80) 
         elif row == 2:
-            tree.column("col2", width=400) #400
+            tree.column("col2", width=400) 
         elif row == 3:
-            tree.column("col3", width=800) #800
+            tree.column("col3", width=800)
    
     #порты
     for i in range(ports): #тут число портов
@@ -101,6 +86,39 @@ def rundom_switch():
             tree.insert("", tk.END, values=())
     tree.pack()
 
+    #обновляются данные кнопки. тут должно быть занесение в таблицы настроек коммутатора определнных данных
+    def update_location(event):
+        selected_value = options.get()
+        button.config(text=selected_value)
+        
+        cursor = connection.cursor() #ставим курсор
+        command = f"UPDATE {switch}_characteristics SET Location = '{selected_value}'" #команда
+        cursor.execute(command) #исполняем команду
+        connection.commit()
+
+
+    values = ["Отключен", "Центральная, 20А", "Береговая, 16"] #сюда выгружаются данные из таблицы с адресами
+    options = ttk.Combobox(mainframe, values=values, width=18, state='readonly')
+    options.place(x = 145, y = 105)
+    options.bind("<<ComboboxSelected>>", update_location)
+
+    label0 = tk.Label(mainframe, text="Основное:", font="TimesNewRoman 12").place(x=100, y=5)
+    label1 = tk.Label(mainframe, text="IP-адрес:", font="TimesNewRoman 10").place(x=5, y=30)
+    label2 = tk.Label(mainframe, text="Логин:", font="TimesNewRoman 10").place(x=5, y=55)
+    label3 = tk.Label(mainframe, text="Пароль:", font="TimesNewRoman 10").place(x=5, y=80)
+    label4 = tk.Label(mainframe, text="Расположение:", font="TimesNewRoman 10").place(x=5, y=105)
+    label5 = tk.Label(mainframe, text="Марка:", font="TimesNewRoman 10").place(x=5, y=130)
+    label6 = tk.Label(mainframe, text="Прошивка:", font="TimesNewRoman 10").place(x=5, y=155)
+    label7 = tk.Label(mainframe, text="Железо:", font="TimesNewRoman 10").place(x=5, y=180)
+
+    entry1 = tk.Entry(mainframe,width=18).place(x=120, y=30)
+    entry2 = tk.Entry(mainframe,width=18).place(x=120, y=55)
+    entry3 = tk.Entry(mainframe,width=18).place(x=120, y=80)
+    button = tk.Button(mainframe, text="", command=lambda: None, width=18) #прописать функцию выбора локации
+    button.place(x=120, y=105)
+    entry5 = tk.Entry(mainframe,width=18).place(x=120, y=130)
+    entry6 = tk.Entry(mainframe,width=18).place(x=120, y=155)
+    entry7 = tk.Entry(mainframe,width=18).place(x=120, y=180)
 
     scrollbar_verticall = tk.Scrollbar(portframe, orient="vertical", command=tree.yview)
     scrollbar_verticall.pack(side="left", fill="y")
@@ -109,12 +127,7 @@ def rundom_switch():
     scrollbar_horizontal = tk.Scrollbar(port_scrollable_frame, orient="horizontal", command=portcanvas.xview)
     scrollbar_horizontal.pack(side="bottom", fill="x")
     tree.configure(xscrollcommand=scrollbar_horizontal.set)
-    
-    ###изменение###########################################
-    #port_scrollable_frame.update_idletasks() #обновляем данные по канвас
-    #portcanvas.config(scrollregion=portcanvas.bbox("all"))
-    ###изменение###########################################
-    
+        
     root.mainloop()
   
 rundom_switch()
